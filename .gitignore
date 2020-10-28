@@ -248,7 +248,7 @@ dmypy.json
 /output2/*
 /NotFound/
 /Lost/
-/input/
+/input/*
 /error/
 /temp/
 /Searched/
