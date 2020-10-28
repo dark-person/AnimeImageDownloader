@@ -1,4 +1,7 @@
 from ParsedSource import ParsedSource
+import logging
+
+combine_source_logger = logging.getLogger("main.combined_source")
 
 
 class CombinedSource:
@@ -14,7 +17,8 @@ class CombinedSource:
 
     def __repr__(self):
         string = "<Combined Source> "
-        string += "[only] " if self.is_only() else ""
+        string += "[pixiv only] " if self.is_pixiv_only() else ""
+        string += "[twitter only] " if self.is_twitter_only() else ""
         string += ("pixiv : " + str(self.pixiv_id) + " ") if self.pixiv_id else ""
         string += ("twitter : [" + str(self.twitter_id) + " by " + str(
             self.twitter_author) + "] ") if self.twitter_author else ""
@@ -39,19 +43,19 @@ class CombinedSource:
 
     def combine(self):
         self.source_list.sort(reverse=True)
-        print(self.source_list)
+        combine_source_logger.debug("%-20s [combine] source list : %s", "[Combined Source]", str(self.source_list))
         for item in self.source_list:
             if item.is_primary_pixiv() and not self.pixiv_id:
                 self.pixiv_id = item.pixiv_id
             if item.is_primary_twitter() and not self.twitter_author:
                 self.twitter_author, self.twitter_id = self.parsed_twitter(item.primary_url)
-            if item.is_backup_danbooru():
+            if item.is_backup_danbooru() and not self.danbooru_id:
                 self.danbooru_id = item.danbooru_id
-            if item.is_backup_yandere():
+            if item.is_backup_yandere() and not self.yandere_id:
                 self.yandere_id = item.yandere_id
-            if item.is_backup_gelbooru():
+            if item.is_backup_gelbooru() and not self.gelbooru_id:
                 self.gelbooru_id = item.gelbooru_id
-            if item.is_backup_sankakucomplex():
+            if item.is_backup_sankakucomplex() and not self.sankaku_id:
                 self.sankaku_id = item.sankaku_id
 
     def is_only(self):
@@ -76,4 +80,4 @@ class CombinedSource:
         return new_list
 
     def print_info(self):
-        print(self.__repr__())
+        combine_source_logger.info("%-20s %s", "[Combined Source]", self.__repr__())
