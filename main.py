@@ -8,7 +8,7 @@ from pysaucenao import SauceNao, errors
 from CombinedSource import CombinedSource
 from Downloader import *
 from ParsedSource import ParsedSource
-import config
+from configparser import ConfigParser
 import logging
 
 logger = logging.getLogger("main")
@@ -30,12 +30,26 @@ logger.addHandler(fh)
 
 logger.propagate = False
 
+# Config Part===================================
+
+config = ConfigParser()
+config_filename = "private_config.ini" if Path("private_config.ini").exists() else "config.ini"
+config.read(config_filename)
+
+SAUCENAO_API_KEY = config.get('Saucenao API', "KEY")
+USERNAME = config.get('Pixiv Info', "USERNAME")
+PASSWORD = config.get('Pixiv Info', "PASSWORD")
+
+if not USERNAME and not PASSWORD:
+    logger.error("%-20s Pixiv Account and Password must be provided.", "[Main]")
+    exit(1)
+
 
 async def search_and_download(path, download_manager: Downloader2Manager):
     logger.info("%-20s Start.. image path = %s", "[Main]", path)
     sauce = SauceNao(
         results_limit=10,
-        api_key=config.SAUCENAO_API_KEY,
+        api_key=SAUCENAO_API_KEY,
         min_similarity=75.0)
     results = await sauce.from_file(path)
     logger.info("%-20s short limit : %s, long limit : %s", "[Main]", str(results.short_remaining),
@@ -85,14 +99,20 @@ async def main():
     Path("output").mkdir(parents=True, exist_ok=True)
 
     filelist = get_input_filelist()
-    download_manager = Downloader2Manager(config.USERNAME, config.PASSWORD)
-    for item in filelist:
+    download_manager = Downloader2Manager(USERNAME, PASSWORD)
+    for i in range(0, len(filelist)):
+        item = filelist[i]
+        logger.info("%-20s =======================", '[Main]')
+        logger.info("%-20s item = {%s}", '[Main]', item)
         try:
             # TODO : await search_and_download(item, download_manager)
             await search_and_download(item, download_manager)
-            logger.info("%-20s Start sleeping 15s..", "[Main]")
-            time.sleep(15)
-            logger.info("%-20s Sleep complete.", "[Main]")
+            logger.info("%-20s Item Completed : %s / %s", '[Main]', i + 1, len(filelist))
+
+            if i + 1 < len(filelist):
+                logger.info("%-20s Start sleeping 15s..", "[Main]")
+                time.sleep(15)
+                logger.info("%-20s Sleep complete.", "[Main]")
         except errors.ShortLimitReachedException:
             logger.error("%-20s Short Limited used. Sleep.", "[Main]")
             time.sleep(30)
