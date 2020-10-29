@@ -154,6 +154,7 @@ class SankakuModule(Module):
         new_img_path = directory + "/" + filename + item.suffix
         sankaku_logger.info("%-20s [Download] New image Path : %s", "[Sankaku Module]", new_img_path)
 
+        Path(new_img_path).unlink(missing_ok=True)
         item.rename(new_img_path)
         sankaku_logger.info("%-20s [Download] Completed.", "[Sankaku Module]")
 

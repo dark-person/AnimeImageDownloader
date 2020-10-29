@@ -118,6 +118,7 @@ class DanbooruModule(Module):
         item = Path(temp_img_path)
         new_img_path = directory + "/" + filename + item.suffix
         danbooru_logger.info("%-20s [Download] New image Path : %s", "[Danbooru Module]", new_img_path)
+        Path(new_img_path).unlink(missing_ok=True)
         item.rename(new_img_path)
         danbooru_logger.info("%-20s [Download] Completed.", "[Danbooru Module]")
 
