@@ -1,15 +1,14 @@
 import asyncio
+import logging
 import os
 import time
-from pathlib import Path
+from configparser import ConfigParser
 
 from pysaucenao import SauceNao, errors
 
-from CombinedSource import CombinedSource
 from Downloader import *
 from ParsedSource import ParsedSource
-from configparser import ConfigParser
-import logging
+import sys
 
 logger = logging.getLogger("main")
 logger.setLevel(logging.DEBUG)

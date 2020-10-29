@@ -1,15 +1,11 @@
-from bs4 import BeautifulSoup
-import requests
-import exception
-from fake_headers import Headers
-from urllib.parse import urlparse
-import shutil
-from datetime import datetime
-import time
-from PIL import Image
-from pathlib import Path
-from container import replace_reserved_character, Module
 import logging
+from pathlib import Path
+from urllib.parse import urlparse
+
+import requests
+
+import exception
+from container import Module
 
 danbooru_logger = logging.getLogger("main.downloader.danbooru")
 
