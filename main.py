@@ -14,7 +14,7 @@ import logging
 logger = logging.getLogger("main")
 logger.setLevel(logging.DEBUG)
 
-fh = logging.FileHandler('activity.log',encoding='utf-8')
+fh = logging.FileHandler('activity.log', encoding='utf-8')
 fh.setLevel(logging.DEBUG)
 
 ch = logging.StreamHandler(stream=sys.stdout)
