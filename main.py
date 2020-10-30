@@ -10,6 +10,10 @@ from Downloader import *
 from ParsedSource import ParsedSource
 import sys
 
+log_dir = os.path.abspath(__file__)
+os.chmod(log_dir, 0o777)
+
+
 logger = logging.getLogger("main")
 logger.setLevel(logging.DEBUG)
 
@@ -95,7 +99,6 @@ async def main():
     try:
         Path("Searched").mkdir(parents=True, exist_ok=True)
         Path("Problem").mkdir(parents=True, exist_ok=True)
-        Path("NotFound").mkdir(parents=True, exist_ok=True)
         Path("output").mkdir(parents=True, exist_ok=True)
 
         filelist = get_input_filelist()
