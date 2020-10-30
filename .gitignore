@@ -258,3 +258,5 @@ test.py
 /.idea/
 /config.py
 /private_config.ini
+/upx-3.96-win64/
+export_exe.bat
