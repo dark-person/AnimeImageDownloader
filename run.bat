@@ -1,2 +1,2 @@
-start "" /B /WAIT "%~dp0dist\main\main.exe"
+.\dist\main\main.exe
 pause

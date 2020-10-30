@@ -119,7 +119,7 @@ async def main():
             except errors.DailyLimitReachedException:
                 logger.error("%-20s 24hr limited used. Terminated", "[Main]")
                 input("24hr limited used. Terminated.")
-                sys.exit(1)
+                exit(1)
     except Exception as e:
         import traceback
         traceback.print_exc()
