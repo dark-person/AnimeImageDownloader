@@ -1,20 +1,19 @@
 import asyncio
+import logging
 import os
 import time
-from pathlib import Path
+from configparser import ConfigParser
 
 from pysaucenao import SauceNao, errors
 
-from CombinedSource import CombinedSource
 from Downloader import *
 from ParsedSource import ParsedSource
-import config
-import logging
+import sys
 
 logger = logging.getLogger("main")
 logger.setLevel(logging.DEBUG)
 
-fh = logging.FileHandler('activity.log')
+fh = logging.FileHandler('activity.log', encoding='utf-8')
 fh.setLevel(logging.DEBUG)
 
 ch = logging.StreamHandler(stream=sys.stdout)
@@ -30,12 +29,26 @@ logger.addHandler(fh)
 
 logger.propagate = False
 
+# Config Part===================================
+
+config = ConfigParser()
+config_filename = "private_config.ini" if Path("private_config.ini").exists() else "config.ini"
+config.read(config_filename)
+
+SAUCENAO_API_KEY = config.get('Saucenao API', "KEY")
+USERNAME = config.get('Pixiv Info', "USERNAME")
+PASSWORD = config.get('Pixiv Info', "PASSWORD")
+
+if not USERNAME and not PASSWORD:
+    logger.error("%-20s Pixiv Account and Password must be provided.", "[Main]")
+    exit(1)
+
 
 async def search_and_download(path, download_manager: Downloader2Manager):
     logger.info("%-20s Start.. image path = %s", "[Main]", path)
     sauce = SauceNao(
         results_limit=10,
-        api_key=config.SAUCENAO_API_KEY,
+        api_key=SAUCENAO_API_KEY,
         min_similarity=75.0)
     results = await sauce.from_file(path)
     logger.info("%-20s short limit : %s, long limit : %s", "[Main]", str(results.short_remaining),
@@ -79,27 +92,39 @@ async def search_and_download(path, download_manager: Downloader2Manager):
 
 
 async def main():
-    Path("Searched").mkdir(parents=True, exist_ok=True)
-    Path("Problem").mkdir(parents=True, exist_ok=True)
-    Path("NotFound").mkdir(parents=True, exist_ok=True)
-    Path("output").mkdir(parents=True, exist_ok=True)
+	try:
+		Path("Searched").mkdir(parents=True, exist_ok=True)
+		Path("Problem").mkdir(parents=True, exist_ok=True)
+		Path("NotFound").mkdir(parents=True, exist_ok=True)
+		Path("output").mkdir(parents=True, exist_ok=True)
 
-    filelist = get_input_filelist()
-    download_manager = Downloader2Manager(config.USERNAME, config.PASSWORD)
-    for item in filelist:
-        try:
-            # TODO : await search_and_download(item, download_manager)
-            await search_and_download(item, download_manager)
-            logger.info("%-20s Start sleeping 15s..", "[Main]")
-            time.sleep(15)
-            logger.info("%-20s Sleep complete.", "[Main]")
-        except errors.ShortLimitReachedException:
-            logger.error("%-20s Short Limited used. Sleep.", "[Main]")
-            time.sleep(30)
-            await search_and_download(item, download_manager)
-        except errors.DailyLimitReachedException:
-            logger.error("%-20s 24hr limited used. Terminated", "[Main]")
-            exit(1)
+		filelist = get_input_filelist()
+		download_manager = Downloader2Manager(USERNAME, PASSWORD)
+		for i in range(0, len(filelist)):
+			item = filelist[i]
+			logger.info("%-20s =======================", '[Main]')
+			logger.info("%-20s item = {%s}", '[Main]', item)
+			try:
+				# TODO : await search_and_download(item, download_manager)
+				await search_and_download(item, download_manager)
+				logger.info("%-20s Item Completed : %s / %s", '[Main]', i + 1, len(filelist))
+
+				if i + 1 < len(filelist):
+					logger.info("%-20s Start sleeping 15s..", "[Main]")
+					time.sleep(15)
+					logger.info("%-20s Sleep complete.", "[Main]")
+			except errors.ShortLimitReachedException:
+				logger.error("%-20s Short Limited used. Sleep.", "[Main]")
+				time.sleep(30)
+				await search_and_download(item, download_manager)
+			except errors.DailyLimitReachedException:
+				logger.error("%-20s 24hr limited used. Terminated", "[Main]")
+				raw_input("24hr limited used. Terminated.")
+				exit(1)
+	except Exception as e:
+		import traceback
+		traceback.print_exc()
+		input("Program Crashed. Enter to Exit")
 
 
 def get_input_filelist():

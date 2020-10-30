@@ -40,6 +40,15 @@ class Module(abc.ABC):
 
         # 3. A.width = B.width, A.height = B.height
         if self.width == other.width and self.height == other.width:
+            self.module_logger.debug("%-20s [Compare Module] Width Height Equal", "[Module]")
+            self.module_logger.debug("%-20s [Compare Module] pixiv : %s %s", "[Module]", self.module_name == "pixiv",
+                                     other.module_name == "pixiv")
+            self.module_logger.debug("%-20s [Compare Module] danbooru : %s %s", "[Module]",
+                                     self.module_name == "danbooru", other.module_name == "danbooru")
+            self.module_logger.debug("%-20s [Compare Module] input : %s %s", "[Module]", self.module_name == "input",
+                                     other.module_name == "input")
+            self.module_logger.debug("%-20s [Compare Module] sankaku : %s %s", "[Module]",
+                                     self.module_name == "sankaku", other.module_name == "sankaku")
             if self.module_name == "pixiv":
                 return True
             elif other.module_name == "pixiv":

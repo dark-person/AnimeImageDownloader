@@ -1,23 +1,13 @@
-import shutil
-import sys
+import logging
 from datetime import datetime
 from pathlib import Path
 
-import requests
-import exception
-from exception import *
-from PIL import Image
-from pixivapi import Client as PixivClient
-from pixivapi import Size
-from pixivapi import errors as pixiv_api_errors
-
 from CombinedSource import CombinedSource
 from DanbooruModule import DanbooruModule
-from SankakuModule import SankakuModule
 from InputImageModule import InputImageModule
 from PixivModule import PixivModule
-from container import replace_reserved_character
-import logging
+from SankakuModule import SankakuModule
+from exception import *
 
 downloader2_logger = logging.getLogger("main.downloader")
 
