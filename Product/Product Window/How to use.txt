@@ -1,0 +1,36 @@
+CheckList:
+
+config.ini
+-> Input your pixiv username, password
+-> You can make the last key empty
+
+folder input/
+-> Put the anime image into the input folder
+
+init.bat
+-> It will set all activity log into empty
+-> Make Sure you keep the lopg itself
+
+run.bat
+-> After all things above finished, then click run.bat to start
+-> [Important] Before Run it, first ensure activity log not include important trace
+
+[Important] After run it, if any bug appear, send the activity.log and the input image to development
+
+
+=============================================================
+
+Output
+
+There wher 4 folder will appear when prorgram start to run
+
+1. Searched :	will show to image that success find source
+
+2. Problems: 	will show the image is not abble to search and download
+		[Cation] it is a important source taht can in report issus to devdeloper
+
+3. Output:	will show all image that able to seach amd download high quality
+		The folder will be like [The name of ACG Book/Game/Commic] / [Character Name] /[illustxxxxxx]
+		
+		Pixiv only and will be [illlust + pixivid + (timestring)]
+		twitter only will be [twitter + author + [post id]
