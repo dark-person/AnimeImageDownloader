@@ -105,8 +105,9 @@ class DanbooruModule(Module):
         temp_img_path = self.download_original_image()
 
         if not filename:
-            filename = temp_img_path.split("/")[-1]
-            filename = filename.split(".")[0]
+            filename = Path(temp_img_path).stem
+        if filename[0] == "_":
+            filename = Path(temp_img_path).stem + filename
 
         path_obj = Path(directory)
         path_obj.mkdir(exist_ok=True, parents=True)
@@ -114,7 +115,12 @@ class DanbooruModule(Module):
         item = Path(temp_img_path)
         new_img_path = directory + "/" + filename + item.suffix
         danbooru_logger.info("%-20s [Download] New image Path : %s", "[Danbooru Module]", new_img_path)
-        Path(new_img_path).unlink(missing_ok=True)
+
+        # Clear Destination File to ensure it is empty
+        destination_item = Path(new_img_path)
+        if destination_item.exists():
+            destination_item.unlink()
+
         item.rename(new_img_path)
         danbooru_logger.info("%-20s [Download] Completed.", "[Danbooru Module]")
 

@@ -100,16 +100,21 @@ class Downloader2(object):
 
         filename = ""
 
-        if not self.pixiv_module.is_empty():
+        downloader2_logger.debug("%-20s [Get Directory and Filename] Decision 1 : %s", "[Downloader2]",
+                                 self.pixiv_id and not self.is_twitter_only())
+        downloader2_logger.debug("%-20s [Get Directory and Filename] Decision 2 : %s", "[Downloader2]",
+                                 self.combined_source.is_twitter_only())
+        downloader2_logger.debug("%-20s [Get Directory and Filename] Decision 3 : %s", "[Downloader2]",
+                                 self.pixiv_module.is_empty() and self.danbooru_module.is_empty()
+                                 and self.sankaku_module.is_empty() and self.pixiv_id)
+
+        if self.pixiv_id and not self.is_twitter_only():
             time_string = datetime.today().strftime('%Y%m%d_%H%M%S')
             filename = "illust_" + str(self.pixiv_id) + "_" + time_string
         if self.combined_source.is_twitter_only():
             filename = "twitter_" + self.twitter_author + "_" + self.twitter_id
 
         if self.pixiv_module.is_empty() and self.danbooru_module.is_empty() and self.sankaku_module.is_empty():
-            if self.pixiv_id:
-                time_string = datetime.today().strftime('%Y%m%d_%H%M%S')
-                filename = "illust_" + str(self.pixiv_id) + "_" + time_string
             filename += "_lost"
 
         if all(module < self.input_image_module and not module.is_empty() for module in

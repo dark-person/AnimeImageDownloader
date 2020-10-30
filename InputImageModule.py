@@ -44,7 +44,9 @@ class InputImageModule(Module):
         if not self.image_path:
             raise InputImageEmptyException
         if not filename:
-            filename = self.image_path.split('/')[-1]
+            filename = Path(self.image_path).stem
+        if filename[0] == "_":
+            filename = Path(self.image_path).stem + filename
 
         item = Path(self.image_path)
 

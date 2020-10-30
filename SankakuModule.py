@@ -146,7 +146,9 @@ class SankakuModule(Module):
         temp_img_path = self.download_original_image()
 
         if not filename:
-            filename = temp_img_path.split("/")[-1]
+            filename = Path(temp_img_path).stem
+        if filename[0] == "_":
+            filename = Path(temp_img_path).stem + filename
 
         sankaku_logger.info("%-20s [Download] Filename = %s ", "[Sankaku Module]", filename)
 
@@ -154,7 +156,11 @@ class SankakuModule(Module):
         new_img_path = directory + "/" + filename + item.suffix
         sankaku_logger.info("%-20s [Download] New image Path : %s", "[Sankaku Module]", new_img_path)
 
-        Path(new_img_path).unlink(missing_ok=True)
+        # Clear Destination File to ensure it is empty
+        destination_item = Path(new_img_path)
+        if destination_item.exists():
+            destination_item.unlink()
+
         item.rename(new_img_path)
         sankaku_logger.info("%-20s [Download] Completed.", "[Sankaku Module]")
 

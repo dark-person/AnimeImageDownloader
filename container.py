@@ -29,6 +29,12 @@ class Module(abc.ABC):
         self.module_name = module_name
 
     def __gt__(self, other):
+        self.module_logger.debug("%-20s [Compare Module] Type Check", "[Module]")
+        self.module_logger.debug("%-20s [Compare Module] Module %s : %s {%s} x %s {%s}", "[Module]", self.module_name,
+                                 self.width, type(self.width), self.height, type(self.height))
+        self.module_logger.debug("%-20s [Compare Module] Module %s : %s {%s} x %s {%s}", "[Module]", other.module_name,
+                                 other.width, type(other.width), other.height, type(other.height))
+
         # Possible matching:
         # 1. A.width > B.width, A.height > B.height
         if self.width > other.width and self.height > other.height:
@@ -39,7 +45,7 @@ class Module(abc.ABC):
             return False
 
         # 3. A.width = B.width, A.height = B.height
-        if self.width == other.width and self.height == other.width:
+        if self.width == other.width and self.height == other.height:
             self.module_logger.debug("%-20s [Compare Module] Width Height Equal", "[Module]")
             self.module_logger.debug("%-20s [Compare Module] pixiv : %s %s", "[Module]", self.module_name == "pixiv",
                                      other.module_name == "pixiv")
