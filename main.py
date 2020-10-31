@@ -10,9 +10,6 @@ from Downloader import *
 from ParsedSource import ParsedSource
 import sys
 
-log_dir = os.path.abspath(__file__)
-os.chmod(log_dir, 0o777)
-
 
 logger = logging.getLogger("main")
 logger.setLevel(logging.DEBUG)
