@@ -8,7 +8,7 @@ from InputImageModule import InputImageModule
 from PixivModule import PixivModule
 from SankakuModule import SankakuModule
 from exception import *
-
+from container import *
 downloader2_logger = logging.getLogger("main.downloader")
 
 
@@ -149,6 +149,9 @@ class Downloader2(object):
 
         self.character_tag = list(dict.fromkeys(self.character_tag))
         self.copyright_tag = list(dict.fromkeys(self.copyright_tag))
+
+        self.character_tag = list(map(lambda item: replace_reserved_character(item), self.character_tag))
+        self.copyright_tag = list(map(lambda item: replace_reserved_character(item), self.copyright_tag))
 
         downloader2_logger.info("%-20s [Set Tags] Character : %s", "[Downloader2]", self.character_tag)
         downloader2_logger.info("%-20s [Set Tags] Copyright : %s", "[Downloader2]", self.copyright_tag)

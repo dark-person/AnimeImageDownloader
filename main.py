@@ -123,7 +123,10 @@ async def main():
     except Exception as e:
         import traceback
         traceback.print_exc()
+        logger.exception("Unknown Exception")
         input("Program Crashed. Enter to Exit")
+
+    logger.info("%-20s All image processed. Program will terminated.", "[Main]")
 
 
 def get_input_filelist():
@@ -144,7 +147,6 @@ def get_input_filelist():
 if __name__ == "__main__":
     loop = asyncio.get_event_loop()
     r = loop.run_until_complete(main())
-    logger.info("%-20s All image processed. Program will terminated.", "[Main]")
 
 # Known Issue
 # 1. Image not found in both pixiv and danbooru
