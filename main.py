@@ -9,8 +9,13 @@ from pysaucenao import SauceNao, errors
 from Downloader import *
 from ParsedSource import ParsedSource
 import sys
+import shutil
+import exception
 
+# Can Change this later
+OPTION_MOVE_FILE = False
 
+# =================================
 logger = logging.getLogger("main")
 logger.setLevel(logging.DEBUG)
 
@@ -39,10 +44,24 @@ config.read(config_filename)
 SAUCENAO_API_KEY = config.get('Saucenao API', "KEY")
 USERNAME = config.get('Pixiv Info', "USERNAME")
 PASSWORD = config.get('Pixiv Info', "PASSWORD")
+BOOKMARK = config.getboolean('Pixiv Info', 'BOOKMARK')
 
 if not USERNAME and not PASSWORD:
     logger.error("%-20s Pixiv Account and Password must be provided.", "[Main]")
     exit(1)
+
+if not BOOKMARK:
+    BOOKMARK = False
+
+
+def move_file(original_filepath, new_directory):
+    if not OPTION_MOVE_FILE:
+        return
+    else:
+        file = Path(original_filepath)
+        file.rename(new_directory + file.name)
+        logger.info("%-20s Original File {%s} Moved to %s/ folder", "[Main]", original_filepath, new_directory)
+        return
 
 
 async def search_and_download(path, download_manager: Downloader2Manager):
@@ -57,9 +76,7 @@ async def search_and_download(path, download_manager: Downloader2Manager):
 
     if len(results.results) <= 0:
         logger.error("No sauce is found.")
-        file_path = Path(path)
-        file_path.rename("NotFound/" + file_path.name)
-        logger.info("Original File Moved to NotFound/ folder.")
+        move_file(path, "NotFound")
         return
 
     combined_source = CombinedSource()
@@ -77,29 +94,31 @@ async def search_and_download(path, download_manager: Downloader2Manager):
     combined_source.print_info()
     logger.info("%-20s Analysis Completed.", "[Main]")
 
-    downloader = download_manager.get_new_downloader(combined_source, path)
-    result = downloader.download()
-    downloader.terminate()
+    try:
+        downloader = download_manager.get_new_downloader(combined_source, path)
+        result = downloader.download()
+        downloader.terminate()
 
-    file_path = Path(path)
-    if result:
-        file_path.rename("Searched/" + file_path.name)
-        logger.info("%-20s image {%s} move to Searched/", "[Main]", path)
-    else:
-        file_path.rename("Problem/" + file_path.name)
-        logger.info("%-20s image {%s} move to Problem/", "[Main]", path)
+        if result:
+            move_file(path, "Searched")
+        else:
+            move_file(path, "NotFound")
 
-    logger.info("%-20s Image Search and Download Complete.", "[Main]")
+        logger.info("%-20s Image Search and Download Complete.", "[Main]")
+
+    except EmptyCombinedSourceInputException:
+        logger.exception("%-20s Combined Source Empty. Move file to NotFound/")
+        move_file(path, "NotFound")
 
 
 async def main():
     try:
         Path("Searched").mkdir(parents=True, exist_ok=True)
-        Path("Problem").mkdir(parents=True, exist_ok=True)
+        Path("NotFound").mkdir(parents=True, exist_ok=True)
         Path("output").mkdir(parents=True, exist_ok=True)
 
         filelist = get_input_filelist()
-        download_manager = Downloader2Manager(USERNAME, PASSWORD)
+        download_manager = Downloader2Manager(USERNAME, PASSWORD, bookmark_option=BOOKMARK)
         for i in range(0, len(filelist)):
             item = filelist[i]
             logger.info("%-20s =======================", '[Main]')
@@ -120,7 +139,23 @@ async def main():
                 logger.error("%-20s 24hr limited used. Terminated", "[Main]")
                 input("24hr limited used. Terminated.")
                 sys.exit(1)
-    except Exception as e:
+            except:
+                logger.exception("%-20s Unknown Exception. Packing..", "[Main]")
+
+                # Exception Information Packing
+                Path("Exception Package").mkdir(exist_ok=True, parents=True)
+                shutil.copy("activity.log", "Exception Package")
+                shutil.copy(item, "Exception Package")
+
+                time_string = datetime.today().strftime('%Y%m%d%H%M%S')
+                package_name = "Exception_Log/" + "Exception_" + time_string
+                shutil.make_archive(package_name, 'zip', "Exception Package")
+                logger.info("%-20s Package completed.", "[Main]")
+
+                shutil.rmtree("Exception Package", ignore_errors=True)
+                move_file(item, "NotFound")
+
+    except:
         import traceback
         traceback.print_exc()
         logger.exception("Unknown Exception")

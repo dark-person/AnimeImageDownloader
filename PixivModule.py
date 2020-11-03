@@ -21,7 +21,7 @@ pixiv_logger = logging.getLogger("main.downloader.pixiv")
 class PixivModule(Module):
     output_root_directory = Path("output2")
 
-    def __init__(self, username, password):
+    def __init__(self, username, password, bookmark_option=False):
         super().__init__(module_name="pixiv")
         pixiv_logger.info("%-20s ===> Pixiv Module Init", "[Pixiv Module]")
         self.pixiv_id = ""
@@ -29,6 +29,7 @@ class PixivModule(Module):
 
         self.username = username
         self.password = password
+        self.bookmark_option = bookmark_option
 
         self.api = AppPixivAPI()
         try:
@@ -100,8 +101,9 @@ class PixivModule(Module):
 
             self.api.download(single_image_url, path=directory, fname=filename_single)
 
-        self.api.illust_bookmark_add(self.pixiv_id)
-        pixiv_logger.info("%-20s [Download Original] %s Bookmarked.", "[Pixiv Module]", self.pixiv_id)
+        if self.bookmark_option:
+            self.api.illust_bookmark_add(self.pixiv_id)
+            pixiv_logger.info("%-20s [Download Original] %s Bookmarked.", "[Pixiv Module]", self.pixiv_id)
 
         pixiv_logger.info("%-20s [Download Original] Completed.", "[Pixiv Module]")
 

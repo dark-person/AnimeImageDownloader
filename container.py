@@ -2,6 +2,7 @@ import abc
 from urllib.parse import urlparse
 from exception import *
 import logging
+from PIL import Image
 
 
 def replace_multi_character(char_string, text):
@@ -13,6 +14,26 @@ def replace_multi_character(char_string, text):
 
 def replace_reserved_character(text):
     return replace_multi_character("/\\?%*:|\"<>.,;= ", text)
+
+
+# Credit From : https://stackoverflow.com/a/58567453
+def has_transparency(img: Image):
+    if img.mode == "P":
+        transparent = img.info.get("transparency", -1)
+        for _, index in img.getcolors():
+            if index == transparent:
+                return True
+    elif img.mode == "RGBA":
+        extrema = img.getextrema()
+        if extrema[3][0] < 255:
+            return True
+
+    return False
+
+
+def has_transparency_by_path(path):
+    img = Image.open(path)
+    return has_transparency(img)
 
 
 class Module(abc.ABC):

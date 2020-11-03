@@ -201,11 +201,11 @@ class Downloader2(object):
 
 
 class Downloader2Manager(object):
-    def __init__(self, pixiv_username, pixiv_password):
+    def __init__(self, pixiv_username, pixiv_password, bookmark_option=False):
         self.username = pixiv_username
         self.password = pixiv_password
 
-        self.pixiv_module = PixivModule(pixiv_username, pixiv_password)
+        self.pixiv_module = PixivModule(pixiv_username, pixiv_password, bookmark_option=bookmark_option)
         self.danbooru_module = DanbooruModule()
         self.sankaku_module = SankakuModule()
         self.input_image_module = InputImageModule()

@@ -261,3 +261,4 @@ test.py
 /upx-3.96-win64/
 export_exe.bat
 Product/private_config.ini
+/Exception_Log/
