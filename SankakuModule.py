@@ -85,7 +85,6 @@ class SankakuModule(Module):
                             str(self.width), str(self.height), self.img_size)
         return self.get_dict()
 
-    # TODO: download_original_image should be include tags and pixiv id
     def download_original_image(self, retry_count=0) -> str:
 
         if retry_count != 0:
@@ -141,8 +140,6 @@ class SankakuModule(Module):
         return filepath
 
     def download(self, directory="output/unknown", filename=""):
-        # TODO
-
         temp_img_path = self.download_original_image()
 
         if not filename:

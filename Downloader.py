@@ -7,6 +7,7 @@ from DanbooruModule import DanbooruModule
 from InputImageModule import InputImageModule
 from PixivModule import PixivModule
 from SankakuModule import SankakuModule
+from GelbooruModule import GelbooruModule
 from exception import *
 from container import *
 downloader2_logger = logging.getLogger("main.downloader")
@@ -20,7 +21,8 @@ class Downloader2(object):
                  input_image_module: InputImageModule,
                  pixiv_module: PixivModule,
                  danbooru_module: DanbooruModule,
-                 sankaku_module: SankakuModule):
+                 sankaku_module: SankakuModule,
+                 gelbooru_module: GelbooruModule):
         downloader2_logger.info("%-20s [Init] ->> Downloader Initialize..", "[Downloader2]")
 
         # Module Set up
@@ -28,6 +30,7 @@ class Downloader2(object):
         self.danbooru_module = danbooru_module
         self.sankaku_module = sankaku_module
         self.input_image_module = input_image_module
+        self.gelbooru_module = gelbooru_module
 
         self.input_image_module.set_image(input_image)
         downloader2_logger.info("%-20s [Init] Input Resolution : %sx%s (%s)", "[Downloader2]",
@@ -41,10 +44,10 @@ class Downloader2(object):
         self.danbooru_id = combined_source.danbooru_id
         self.pixiv_id = combined_source.pixiv_id
         self.sankaku_id = combined_source.sankaku_id
-
-        # TODO: Gelbooru and yandere module
-        self.yandere_id = combined_source.yandere_id
         self.gelbooru_id = combined_source.gelbooru_id
+
+        # TODO: yandere module
+        self.yandere_id = combined_source.yandere_id
 
         self.twitter_author = combined_source.twitter_author
         self.twitter_id = combined_source.twitter_id
@@ -78,6 +81,15 @@ class Downloader2(object):
                 self.sankaku_module.clear()
                 downloader2_logger.warning("%-20s [Init] Sankaku Module Broken, Module Cleared.", "[Downloader2]")
             downloader2_logger.debug("%-20s [Init] Sankaku : %s", "[Downloader2]", self.sankaku_module.get_dict())
+
+        # Gelbooru Module Change Id
+        if self.gelbooru_id:
+            try:
+                self.gelbooru_module.change_id(self.gelbooru_id)
+            except GelbooruModuleException:
+                self.gelbooru_module.clear()
+                downloader2_logger.warning("%-20s [Init] Gelbooru Module Broken, Module Cleared.", "[Downloader2]")
+            downloader2_logger.debug("%-20s [Init] Gelbooru : %s", "[Downloader2]", self.gelbooru_module.get_dict())
 
         self.set_tags()
         self.priority = self.get_priority()
@@ -114,11 +126,12 @@ class Downloader2(object):
         if self.combined_source.is_twitter_only():
             filename = "twitter_" + self.twitter_author + "_" + self.twitter_id
 
-        if self.pixiv_module.is_empty() and self.danbooru_module.is_empty() and self.sankaku_module.is_empty():
+        if self.pixiv_module.is_empty() and self.danbooru_module.is_empty() \
+                and self.sankaku_module.is_empty() and self.gelbooru_module.is_empty():
             filename += "_lost"
 
         if all(module < self.input_image_module and not module.is_empty() for module in
-               (self.pixiv_module, self.sankaku_module, self.danbooru_module)):
+               (self.pixiv_module, self.sankaku_module, self.danbooru_module, self.gelbooru_module)):
             filename += "_high"
 
         if module != "pixiv":
@@ -127,12 +140,14 @@ class Downloader2(object):
         return str(directory), filename
 
     def get_priority(self):
-        module_list = [self.input_image_module, self.pixiv_module, self.danbooru_module, self.sankaku_module]
+        module_list = [self.input_image_module, self.pixiv_module, self.danbooru_module, self.sankaku_module,
+                       self.gelbooru_module]
         downloader2_logger.info(
-            "%-20s [Get Priority] Input : {%sx%s}, Pixiv : {%sx%s}, Danbooru: {%sx%s}, Sankaku: {%sx%s}",
+            "%-20s [Get Priority] Input : {%sx%s}, Pixiv : {%sx%s}, Danbooru: {%sx%s}, Sankaku: {%sx%s}, Gelbooru: {%sx%s}",
             "[Downloader2]", self.input_image_module.width, self.input_image_module.height,
             self.pixiv_module.width, self.pixiv_module.height, self.danbooru_module.width, self.danbooru_module.height,
-            self.sankaku_module.width, self.sankaku_module.height)
+            self.sankaku_module.width, self.sankaku_module.height, self.gelbooru_module.width,
+            self.gelbooru_module.height)
         module_list.sort(reverse=True)
         filtered_list = list(filter(lambda module: not module.is_empty(), module_list))
         priority_list = list(map(lambda module: module.module_name, filtered_list))
@@ -173,6 +188,9 @@ class Downloader2(object):
         if module_name == "input":
             self.input_image_module.download(directory=directory, filename=filename)
             return True
+        if module_name == "gelbooru":
+            self.gelbooru_module.download(directory=directory, filename=filename)
+            return True
 
     def download(self):
         for i in range(0, len(self.priority)):
@@ -190,6 +208,9 @@ class Downloader2(object):
             except SankakuModuleException:
                 downloader2_logger.error("%-20s [Download] Sankaku Failed. Try Remaining : %s", "[Downloader2]",
                                          self.priority[i + 1:])
+            except GelbooruModuleException:
+                downloader2_logger.error("%-20s [Download] Gelbooru Failed. Try Remaining : %s", "[Downloader2]",
+                                         self.priority[i + 1:])
         return False
 
     def terminate(self):
@@ -197,6 +218,7 @@ class Downloader2(object):
         self.sankaku_module.clear()
         self.input_image_module.clear()
         self.danbooru_module.clear()
+        self.gelbooru_module.clear()
         downloader2_logger.info("%-20s [Terminate] All Module in Downloader Clear.", "[Downloader2]")
 
 
@@ -204,14 +226,16 @@ class Downloader2Manager(object):
     def __init__(self, pixiv_username, pixiv_password, bookmark_option=False):
         self.username = pixiv_username
         self.password = pixiv_password
+        self.bookmark_option = bookmark_option
 
         self.pixiv_module = PixivModule(pixiv_username, pixiv_password, bookmark_option=bookmark_option)
         self.danbooru_module = DanbooruModule()
         self.sankaku_module = SankakuModule()
+        self.gelbooru_module = GelbooruModule()
         self.input_image_module = InputImageModule()
 
     def get_new_downloader(self, combined_source: CombinedSource, input_image) -> Downloader2:
         downloader = Downloader2(combined_source, input_image,
                                  self.input_image_module, self.pixiv_module,
-                                 self.danbooru_module, self.sankaku_module)
+                                 self.danbooru_module, self.sankaku_module, self.gelbooru_module)
         return downloader

@@ -84,6 +84,23 @@ class DanbooruEmptyImageUrl(DanbooruModuleException):
     pass
 
 
+# ============== Gelbooru Module Error ===============
+class GelbooruModuleException(ModuleException):
+    pass
+
+
+class GelbooruEmptyPostId(GelbooruModuleException):
+    pass
+
+
+class GelbooruRequestFailed(GelbooruModuleException):
+    pass
+
+
+class GelbooruEmptyImageURL(GelbooruModuleException):
+    pass
+
+
 # ============== Combined Source Error ==============
 class CombinedSourceException(AnimeImageDownloaderException):
     pass

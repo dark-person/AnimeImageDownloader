@@ -10,8 +10,6 @@ from container import *
 input_logger = logging.getLogger("main.downloader.input")
 
 
-# TODO
-
 class InputImageModule(Module):
     def __init__(self):
         input_logger.info("%-20s [Init] ->> Start..", "[Input Image Module]")

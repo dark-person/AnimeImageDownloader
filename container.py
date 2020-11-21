@@ -1,6 +1,7 @@
 import abc
 from urllib.parse import urlparse
 from exception import *
+from PIL import Image
 import logging
 from PIL import Image
 
@@ -74,6 +75,9 @@ class Module(abc.ABC):
                                      self.module_name == "danbooru", other.module_name == "danbooru")
             self.module_logger.debug("%-20s [Compare Module] input : %s %s", "[Module]", self.module_name == "input",
                                      other.module_name == "input")
+            self.module_logger.debug("%-20s [Compare Module] Gelbooru : %s %s", "[Module]",
+                                     self.module_name == "gelbooru",
+                                     other.module_name == "gelbooru")
             self.module_logger.debug("%-20s [Compare Module] sankaku : %s %s", "[Module]",
                                      self.module_name == "sankaku", other.module_name == "sankaku")
             if self.module_name == "pixiv":
@@ -84,12 +88,17 @@ class Module(abc.ABC):
                 return True
             elif other.module_name == "danbooru":
                 return False
+            elif self.module_name == "gelbooru":
+                return True
+            elif other.module_name == "gelbooru":
+                return False
             elif self.module_name == "input":
                 return True
             elif other.module_name == "input":
                 return False
             elif self.module_name == "sankaku":
-                return True
+                # Due to sankaku change its policy, default return false
+                return False
             elif other.module_name == "sankaku":
                 return False
 

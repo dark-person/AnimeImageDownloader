@@ -13,7 +13,7 @@ import shutil
 import exception
 
 # Can Change this later
-OPTION_MOVE_FILE = False
+OPTION_MOVE_FILE = True
 
 # =================================
 logger = logging.getLogger("main")
@@ -64,8 +64,30 @@ def move_file(original_filepath, new_directory):
         return
 
 
-async def search_and_download(path, download_manager: Downloader2Manager):
-    logger.info("%-20s Start.. image path = %s", "[Main]", path)
+async def search_and_download(original_path, download_manager: Downloader2Manager):
+    logger.info("%-20s Start.. image path = %s", "[Main]", original_path)
+
+    transparency = has_transparency_by_path(original_path)
+    logger.info("%-20s Image Transparency checking : %s", "[Main]", transparency)
+
+    if transparency:
+        temp_path = Path(original_path)
+        Path("transparent").mkdir(exist_ok=True)
+        filename = temp_path.stem + "_white" + temp_path.suffix
+
+        logger.info("%-20s Start creating temp image..", "[Main]")
+
+        image = Image.open(original_path)
+        temp_img = Image.new("RGBA", image.size, "WHITE")
+        temp_img.paste(image, (0, 0), image)
+        temp_img.convert("RGB").save("transparent/" + filename, "JPEG")
+
+        path = "transparent/" + filename
+
+        logger.info("%-20s Temp image created. Save in : %s", "[Main]", path)
+    else:
+        path = original_path
+
     sauce = SauceNao(
         results_limit=10,
         api_key=SAUCENAO_API_KEY,
@@ -76,7 +98,7 @@ async def search_and_download(path, download_manager: Downloader2Manager):
 
     if len(results.results) <= 0:
         logger.error("No sauce is found.")
-        move_file(path, "NotFound")
+        move_file(original_path, "NotFound")
         return
 
     combined_source = CombinedSource()
@@ -95,20 +117,24 @@ async def search_and_download(path, download_manager: Downloader2Manager):
     logger.info("%-20s Analysis Completed.", "[Main]")
 
     try:
-        downloader = download_manager.get_new_downloader(combined_source, path)
+        downloader = download_manager.get_new_downloader(combined_source, original_path)
         result = downloader.download()
         downloader.terminate()
 
         if result:
-            move_file(path, "Searched")
+            move_file(original_path, "Searched")
         else:
-            move_file(path, "NotFound")
+            move_file(original_path, "NotFound")
+
+        if path != original_path:
+            shutil.rmtree("transparent", ignore_errors=True)
+            logger.info("%-20s Temp Directory Removed.", "[Main]")
 
         logger.info("%-20s Image Search and Download Complete.", "[Main]")
 
     except EmptyCombinedSourceInputException:
         logger.exception("%-20s Combined Source Empty. Move file to NotFound/")
-        move_file(path, "NotFound")
+        move_file(original_path, "NotFound")
 
 
 async def main():
@@ -116,6 +142,7 @@ async def main():
         Path("Searched").mkdir(parents=True, exist_ok=True)
         Path("NotFound").mkdir(parents=True, exist_ok=True)
         Path("output").mkdir(parents=True, exist_ok=True)
+        Path("Exception_Log").mkdir(parents=True, exist_ok=True)
 
         filelist = get_input_filelist()
         download_manager = Downloader2Manager(USERNAME, PASSWORD, bookmark_option=BOOKMARK)

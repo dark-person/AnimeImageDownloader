@@ -17,15 +17,16 @@ class DanbooruModule(Module):
         self.original_url = ""
         self.copyright_tag = []
         self.character_tag = []
-        pass
 
     def __init__(self):
         super().__init__(module_name="danbooru")
+        danbooru_logger.info("%-20s ===> Danbooru Module Init", "[Danbooru Module]")
         self.danbooru_id = ""
         self.width, self.height = 0, 0
         self.original_url = ""
         self.copyright_tag = []
         self.character_tag = []
+        danbooru_logger.info("%-20s ===> Danbooru Module Completed", "[Danbooru Module]")
 
     def change_id(self, danbooru_id):
         danbooru_logger.info("%-20s ===> Danbooru Module, init id..", "[Danbooru Module]")
@@ -33,7 +34,7 @@ class DanbooruModule(Module):
         self.danbooru_id = str(danbooru_id)
         danbooru_logger.info("%-20s ===>    ID : %s ", "[Danbooru Module]", self.danbooru_id)
         self.get_post_info()
-        danbooru_logger.info("%-20s ===> Danbooru Module, init id..", "[Danbooru Module]")
+        danbooru_logger.info("%-20s ===> Danbooru Module, init id completed.", "[Danbooru Module]")
 
     @staticmethod
     def identify_image_extension(url):
@@ -74,7 +75,6 @@ class DanbooruModule(Module):
                              str(self.height))
         return self.get_dict()
 
-    # TODO: download_original_image should be include tags and pixiv id
     def download_original_image(self):
         danbooru_logger.info("%-20s [Download Original] Start.", "[Danbooru Module]")
 
