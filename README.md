@@ -10,6 +10,19 @@ It will use saucenao api to find the image source, and try to download better ve
 - pysaucenao
 - PixivPy
 
+## Usage for config.ini
+There are a file called config.ini, the value will be used in the script, **input required value before run the script**
+
+```
+[Pixiv Info]
+USERNAME : (Required, Enter your pixiv username)
+PASSWORD : (Required, Enter your pixiv password)
+BOOKMARK : (Default False, it will decided bookmark the illustration if it published in pixiv)
+
+[Saucenao API]
+KEY : (Default Empty, Purpose is to increase the search limit, you can run script with empty value in this field)
+```
+
 ## Usage
 
 1. Create an folder called "input".
@@ -17,7 +30,6 @@ It will use saucenao api to find the image source, and try to download better ve
 3. Run the script, that will run for a while.
 4. The output file will be save in the path: [anime name]/[character name]/[filename]
 5. If OPTION_MOVE_FILE is true, the input image will move to different folder according to the download result (Searched/ NotFound)
-
 
 ## Contributing
 Due to personal reason, this script **will not be updated** for a long time.
